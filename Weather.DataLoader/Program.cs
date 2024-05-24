@@ -3,18 +3,18 @@ using System.Net.Http.Json;
 using System.Runtime.Versioning;
 using Weather.DataLoader.Models;
 
-IConfiguration config = new  ConfigurationBuilder()
+IConfiguration config = new ConfigurationBuilder()
     .AddJsonFile("appSettings.json")
     .AddEnvironmentVariables()
     .Build();
 
 var servicesConfig = config.GetSection("Services");
 
-var tempServiceConfig = config.GetSection("Temperature");
+var tempServiceConfig = servicesConfig.GetSection("Temperature");
 var tempServiceHost = tempServiceConfig["Host"];
 var tempServicePort = tempServiceConfig["port"];
 
-var precipServiceConfig = config.GetSection("Precipiration");
+var precipServiceConfig = servicesConfig.GetSection("Precipitation");
 var precipServiceHost = precipServiceConfig["Host"];
 var precipServicePort = precipServiceConfig["port"];
 
@@ -39,7 +39,7 @@ foreach ( var zip in zipCodes ) {
     var from = DateTime.Now.AddYears(-2);
     var thru = DateTime.Now;
 
-    for (var day = from.Date; day.Date <= thru.Date; day.AddDays(1) ) {
+    for (var day = from.Date; day.Date <= thru.Date; day = day.AddDays(1) ) {
         var temperatures = PostTemp(zip, day, temperatureHttpClient);
         PostPrecip(temperatures[0], zip, day, precipitationHttpClient);
     }
