@@ -15,7 +15,7 @@ builder.Services.AddDbContext<TemperatureDbContext>(
 var app = builder.Build();
 
 app.MapGet("/observation/{zipcode}", async (string zipcode, [FromQuery] int? days, TemperatureDbContext db) => {
-    if (days == null || days < 1 || days < 30) {
+    if (days == null || days < 1 || days > 30) {
         return Results.BadRequest("Please provide a 'days' query param between 1 and 30");
     }
 
@@ -24,7 +24,7 @@ app.MapGet("/observation/{zipcode}", async (string zipcode, [FromQuery] int? day
     .Where(precip => precip.ZipCode == zipcode && precip.CreatedOn > startDate)
     .ToListAsync();
 
-    return Results.Ok(zipcode);
+    return Results.Ok(results);
 });
 
 //TODO - separate resource model from the data model (make some kind of DTO)

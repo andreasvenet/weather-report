@@ -41,13 +41,6 @@ namespace Weather.Report.BusinessLogic {
         public async Task<WeatherReport> BuildReport(string zip, int days) {
             var httpClient = _http.CreateClient();
 
-            var precipData = await FetchPrecipitationData(httpClient, zip, days);
-            var totalSnow = GetTotalSnow(precipData);
-            var totalRain = GetTotalRain(precipData);
-            _logger.LogInformation(
-                $"zip: {zip} over last {days} days: " +
-                $"total snow: {totalSnow}, rain: {totalRain}"
-                );
 
 
             var tempData = await FetchTemperatureData(httpClient, zip, days);
@@ -57,6 +50,15 @@ namespace Weather.Report.BusinessLogic {
                 $"zip: {zip} over last {days} days: " +
                 $"high temp: {averageHighTemp}, low temp: {averageLowTemp}"
                 );
+
+            var precipData = await FetchPrecipitationData(httpClient, zip, days);
+            var totalSnow = GetTotalSnow(precipData);
+            var totalRain = GetTotalRain(precipData);
+            _logger.LogInformation(
+                $"zip: {zip} over last {days} days: " +
+                $"total snow: {totalSnow}, rain: {totalRain}"
+                );
+
 
             var weatherReport = new WeatherReport {
                 AverageHigh = Math.Round(averageHighTemp, 1),
@@ -101,12 +103,14 @@ namespace Weather.Report.BusinessLogic {
         }
 
         private async Task<List<PrecipitationModel>> FetchPrecipitationData(HttpClient httpClient, string zip, int days) {
-            var endpont = BuildTemperatureServiceEndpoint(zip, days);
+            var endpont = BuildPrecipitationServiceEndpoint(zip, days);
             var precipRecords = await httpClient.GetAsync(endpont);
             var jsonSerializerOptions = new JsonSerializerOptions {
                 PropertyNameCaseInsensitive = true,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
+            var content = await precipRecords.Content.ReadAsStringAsync();
+
             var precipData = await precipRecords
                 .Content
                 .ReadFromJsonAsync<List<PrecipitationModel>>(jsonSerializerOptions);
